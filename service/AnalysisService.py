@@ -13,8 +13,8 @@ class AnalysisService:
         # combined = {
         #     "posts": all_posts
         # }
-        with open("section1_data.json", "w") as f:
-            json.dump(all_posts, f, indent=2)
+        # with open("section1_data.json", "w") as f:
+        #     json.dump(all_posts, f, indent=2)
         return self.topic_miner_api.section1(all_posts)
     
     def analyze_all(self, all_data: list):
@@ -29,6 +29,6 @@ class AnalysisService:
             "new_posts": all_posts,
             "bubble_keywords": keywords
         }
-        with open("section3_data.json", "w") as f:
-            json.dump(data, f, indent=2)
+        # with open("section3_data.json", "w") as f:
+        #     json.dump(data, f, indent=2)
         return self.topic_miner_api.section3(data)

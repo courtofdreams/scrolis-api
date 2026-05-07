@@ -1,9 +1,8 @@
 from service.MongoDBService import MongoDBService
 import os
+from config import settings
 
-mongo = MongoDBService(
-    "mongodb://root:password123@localhost:27017"
-)
+mongo = MongoDBService(settings.MONGO_URI)
 
 result = mongo.daily_topic_digests.delete_many({})
 

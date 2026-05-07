@@ -53,6 +53,7 @@ def combine_historical_and_current_topics(historical_data, current_data):
 def get_valid_x_access_token(db, user_id):
     """Return a valid Twitter access token, refreshing it when needed."""
 
+
     credentials = (
         db.query(SocialCredentials)
         .filter(SocialCredentials.user_id == user_id)
@@ -63,6 +64,7 @@ def get_valid_x_access_token(db, user_id):
         raise Exception("Twitter credentials not found")
 
     now = datetime.utcnow()
+
 
     if credentials.twitter_token_expires_at and credentials.twitter_token_expires_at > now:
         return credentials.twitter_access_token
@@ -386,8 +388,8 @@ def analyze_topics(
         enriched_result = enrich_representative_posts(result, twitter_posts, reddit_posts)
        
         for topic in enriched_result.get("topics", []):
-            with open(f"section2_data_{topic.get('topic_id')}.json", "w") as f:
-                json.dump({"topic": topic}, f, indent=2)
+            # with open(f"section2_data_{topic.get('topic_id')}.json", "w") as f:
+            #     json.dump({"topic": topic}, f, indent=2)
             queries = analysis_service.get_query_for_topic(topic)
             query_result = []
             if queries:
@@ -424,7 +426,7 @@ def analyze_different_perspectives(
                 None
             )
             if existing_topic:
-                return existing_topic  # ← cache hit, skip re-analysis
+                return existing_topic  
                 
         social_credentials = (
                 db.query(SocialCredentials)
@@ -500,3 +502,30 @@ def analyze_historical_topics(
     except Exception as e:
         print(f"Error fetching historical topics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/analyze/historical-digests")
+def get_historical_digests(
+    current_user: User = Depends(require_login),
+    db: Session = Depends(get_db),
+):
+    try:
+        historical_digests = list(
+            mongo_db_service.historical_digests.find(
+                {
+                    "userId": str(current_user.id)
+                },
+                {
+                    "_id": 0
+                }
+            ).sort("date", -1)
+        )
+
+        return {
+            "historicalDigests": historical_digests
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch historical digests: {str(e)}"
+        )

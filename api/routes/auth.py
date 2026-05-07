@@ -177,6 +177,12 @@ def upsert_social_credentials(
     }
 
 
+@router.get("/user/login-streak")
+def get_login_streak(current_user: User = Depends(require_login), db: Session = Depends(get_db)):
+    logs = mongo_db_service.get_user_login_streak(str(current_user.id))
+    return {"login_streak": logs}
+
+
 @router.post("/auth/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     login_identifier = data.identifier
@@ -245,3 +251,4 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
         "token_type": "bearer",
     }
         
+            

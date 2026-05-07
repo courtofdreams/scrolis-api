@@ -7,6 +7,7 @@ DATABASE_NAME = "scrolis"
 DAILY_TOPIC_DIGESTS_COLLECTION = "daily_topic_digests"
 USER_PREFERENCES_COLLECTION = "user_topic_preferences"
 USER_LOGS_COLLECTION = "user_logs"
+HISTORICAL_DIGESTS_COLLECTION = "historical_digests"
 logger = logging.getLogger(__name__)
 
 class MongoDBService:
@@ -17,6 +18,7 @@ class MongoDBService:
         self.daily_topic_digests = self.db[DAILY_TOPIC_DIGESTS_COLLECTION]
         self.client_logs = self.db[USER_LOGS_COLLECTION]
         self.user_topic_preferences = self.db[USER_PREFERENCES_COLLECTION]
+        self.historical_digests = self.db[HISTORICAL_DIGESTS_COLLECTION]
 
     def _normalize_user_id(self, user_id):
         return str(user_id)
@@ -41,6 +43,7 @@ class MongoDBService:
         now = datetime.datetime.utcnow()
         document = {
             "userId": self._normalize_user_id(user_id),
+            "runDate": now.date().isoformat(),
             "topicsDigest": topics_digest,
             "createdAt": now,
             "differentPerspectivesDigest": [],
@@ -99,6 +102,13 @@ class MongoDBService:
         query = {"userId": self._normalize_user_id(user_id)}
         return self.client_logs.find_one(query)
     
+    def get_user_login_streak(self, user_id):
+        normalized_user_id = self._normalize_user_id(user_id)
+        logs = self.find_user_logs_by_user_id(normalized_user_id)
+        if logs:
+            return logs.get("loginStreak", 0)
+        return 0
+    
     def update_user_log(self, user_id):
         normalized_user_id = self._normalize_user_id(user_id)
         find_result = self.client_logs.find_one({"userId": normalized_user_id})
@@ -111,20 +121,18 @@ class MongoDBService:
                 if key != "_id"
             }
 
+            logs.setdefault("loginStreak", 0)
             last_login_value = logs.get("lastLogin")
             if last_login_value:
                 last_login_date = self._normalize_datetime(last_login_value)
                 if last_login_date is not None:
-                    if (now - last_login_date).days == 1:
+                    if (now.date() - last_login_date.date()).days == 1:
                         logs["loginStreak"] += 1
-                    else:
-                        logs["loginStreak"] = 0
                     logs["lastLogin"] = now
                 else:
-                    logs["loginStreak"] = 0
                     logs["lastLogin"] = now
         else:
-            logs = {"userId": normalized_user_id, "lastLogin": now, "loginStreak": 0}
+            logs = {"userId": normalized_user_id, "lastLogin": now, "loginStreak": 1}
         
         query = {"userId": normalized_user_id}
         update = {"$set": logs}

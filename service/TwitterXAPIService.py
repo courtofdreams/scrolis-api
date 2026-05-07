@@ -225,15 +225,22 @@ class TwitterXAPIService:
         """
         Refresh access token using refresh token.
         """
-        auth = OAuth2PKCEAuth(
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-            redirect_uri=self.redirect_uri,
-            scope=scopes
-        )
         try:
-            token_data = auth.refresh_token(refresh_token=refresh_token)
-            return token_data
+            response = requests.post(
+                "https://api.twitter.com/2/oauth2/token",
+                data={
+                    "grant_type": "refresh_token",
+                    "refresh_token": refresh_token,
+                    "client_id": self.client_id,
+                },
+                auth=(self.client_id, self.client_secret),
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                timeout=30,
+            )
+            response.raise_for_status()
+            return response.json()
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
             return {"error": f"An unexpected error occurred: {e}"}
