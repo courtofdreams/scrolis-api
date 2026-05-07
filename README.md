@@ -1,6 +1,6 @@
-# Refract API
+# Scrolis API
 
-Lightweight FastAPI backend for the Refract capstone project. Provides
+Backend for the Scrolis capstone project. Provides
 authentication, social account connectivity (Twitter, Reddit), content
 fetching and analysis pipelines, and a small cron job toolkit.
 
