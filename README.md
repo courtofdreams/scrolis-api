@@ -39,9 +39,15 @@ docker-compose up --build
 This will start Postgres and MongoDB containers. The `-v` flag removes old volumes
 to ensure a fresh database state.
 
-3. Add required environment variables in a `.env` file or export them in your shell.
+3. Install the Capstone Data package:
 
-4. Start the development server in a new terminal:
+```bash
+pip install git+https://github.com/Chelsea-hzc/Capstone-Data.git
+```
+
+4. Add required environment variables in a `.env` file or export them in your shell.
+
+5. Start the development server in a new terminal:
 
 ```bash
 poetry run uvicorn main:app --reload
@@ -114,17 +120,4 @@ and the AnalysisService.
   your virtualenv is activated and the interpreter is configured.
 - Token exchange failures frequently show the raw OAuth response — check logs
   and verify client IDs/secrets and redirect URIs.
-
-## Next steps / TODOs
-
-- Add a migration script (Alembic) to manage schema evolution.
-- Add automated tests for token refresh paths.
-- Add CI steps to run tests and linting.
-
----
-
-If you'd like, I can also:
-- add a minimal `requirements.txt`/`pyproject` dev extras,
-- scaffold an `alembic` migration setup,
-- or open a PR with these docs and CI config.
 
